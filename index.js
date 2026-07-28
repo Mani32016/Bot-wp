@@ -1,6 +1,20 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const express = require('express');
+const { execSync } = require('child_process');
+const path = require('path');
+
+// Chrome ka exact path dhoondo jo puppeteer ne .cache/puppeteer me install kiya hai
+function findChromePath() {
+    try {
+        const result = execSync(
+            `find ${path.join(__dirname, '.cache', 'puppeteer')} -name "chrome" -type f`
+        ).toString().trim();
+        return result.split('\n')[0];
+    } catch (e) {
+        return undefined;
+    }
+}
 
 const app = express();
 let qrCodeData = '';
@@ -10,6 +24,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: findChromePath(),
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
