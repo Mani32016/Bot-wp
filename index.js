@@ -3,11 +3,10 @@ const qrcode = require('qrcode');
 const express = require('express');
 const { execSync } = require('child_process');
 
-// Chrome ka exact path dhoondo (Render is jagah install karta hai)
 function findChromePath() {
     try {
         const result = execSync(
-            `find /opt/render/.cache/puppeteer -name "chrome" -type f 2>/dev/null`
+            `find ${__dirname}/chrome-bin -name "chrome" -type f 2>/dev/null`
         ).toString().trim();
         return result.split('\n')[0] || undefined;
     } catch (e) {
@@ -48,7 +47,7 @@ client.on('message', async msg => {
 
         const text = msg.body.toLowerCase();
         if (bannedWords.some(word => text.includes(word))) {
-            await msg.delete(true);
+            await msg.delete(true); // true = delete for everyone (admin required)
             console.log('Deleted a message containing banned word.');
         }
     } catch (e) {
@@ -56,12 +55,14 @@ client.on('message', async msg => {
     }
 });
 
+// QR code dekhne ke liye route
 app.get('/qr', (req, res) => {
     if (isReady) return res.send('Already connected!');
     if (!qrCodeData) return res.send('QR generating, refresh in a few seconds...');
     res.send(`<img src="${qrCodeData}" />`);
 });
 
+// Uptime pinger ke liye route
 app.get('/', (req, res) => res.send('Bot is alive'));
 
 app.listen(process.env.PORT || 3000, () => {
